@@ -75,7 +75,7 @@ public class Inputs : MonoBehaviour
     private bool inputJump;
     private bool squareInteract;
     private bool diveRoll;
-    private bool attackR;
+    public static bool attackR;
     private bool attackL;
     private bool equip;
     private bool lockOn;
@@ -118,6 +118,13 @@ public class Inputs : MonoBehaviour
         BoostedSpeed();
         Input();
         Attack();
+
+        if (CutsceneCameraManager.attack)
+        {
+            rpgCharacterController.Attack(1, Side.Left, 0, 0, 1);
+            CutsceneCameraManager.attack = false;
+        }
+
         Jumping();
         Roll();
         SquareInteract();
@@ -217,7 +224,10 @@ public class Inputs : MonoBehaviour
         }
     }
 
-
+    void cutsceneAttack()
+    {
+        rpgCharacterController.Attack(1, Side.Right, 0, 0, 0);
+    }
    
     void Attack()
     {

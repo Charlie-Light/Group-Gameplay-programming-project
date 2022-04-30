@@ -6,11 +6,15 @@ using TMPro;
 public class InChurchTriggerBox : MonoBehaviour
 {
     public static bool inChurchBox = false;
+    public static bool switchPressedIn = false;
 
     private void OnTriggerStay(Collider other)
     {
-        UI_Manager.interactFText = true;
-        inChurchBox = true;
+        if (!switchPressedIn)
+        {
+            UI_Manager.interactFText = true;
+            inChurchBox = true;
+        }
     }
 
     private void OnTriggerExit(Collider other)

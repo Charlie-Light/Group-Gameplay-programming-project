@@ -4,9 +4,13 @@ using UnityEngine;
 
 public class CutsceneCameraManager : MonoBehaviour
 {
+    public Camera playerCam;
+    public static bool attack = false;
+    private bool attacked = false;
     public Camera churchCutsceneCamera;
     public static bool playChurchCutscene = false;
-    public Animator ChurchAnimator;
+    public Animator ChurchSwitchAnimator;
+    public Animator ChurchDoorAnimator;
 
     float cutsceneDurationCountdown = 0;
 
@@ -15,18 +19,29 @@ public class CutsceneCameraManager : MonoBehaviour
     {
         if (playChurchCutscene)
         {
-            Debug.Log("PlayingChurchCutscene");
+            if (!attacked)
+            {
+                if (!attack)
+                {
+                    attack = true;
+                }
+                attacked = true;
+            }
+            Inputs.attackR = false;
+            InChurchTriggerBox.switchPressedIn = true;
             churchCutsceneCamera.gameObject.SetActive(true);
-            churchCutsceneCamera.enabled = true;
-            ChurchAnimator.SetBool("PressSwitch", true);
+            ChurchSwitchAnimator.SetBool("Switch", true);
+            ChurchDoorAnimator.SetBool("SwitchPressed", true);
             Inputs.cutscene = true;
+            churchCutsceneCamera.enabled = true;
             cutsceneDurationCountdown += Time.deltaTime;
 
-            if (cutsceneDurationCountdown == 3)
+            if (cutsceneDurationCountdown >= 3)
             {
                 Inputs.cutscene = false;
                 churchCutsceneCamera.gameObject.SetActive(false);
                 churchCutsceneCamera.enabled = false;
+                playerCam.enabled = true;
                 playChurchCutscene = false;
             }
         }

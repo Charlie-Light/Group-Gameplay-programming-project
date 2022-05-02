@@ -201,6 +201,7 @@ public class Inputs : MonoBehaviour
     {
         if (currentGameState == (int)GameState.GAMEPLAY)
         {
+            //playerCamera.transform.(player.transform.position);
             inputMovement = controls.Play.Move.ReadValue<Vector2>();
             inputCamera = controls.Play.Camera.ReadValue<Vector2>();
         }

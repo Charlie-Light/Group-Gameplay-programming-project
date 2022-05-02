@@ -1,4 +1,4 @@
-// GENERATED AUTOMATICALLY FROM 'Assets/ExplosiveLLC/RPG Character Mecanim Animation Pack/Inputs/RPGInputActions.inputactions'
+// GENERATED AUTOMATICALLY FROM 'Assets/Player/Packages/ExplosiveLLC/RPG Character Mecanim Animation Pack/Inputs/RPGInputActions.inputactions'
 
 using System;
 using System.Collections;

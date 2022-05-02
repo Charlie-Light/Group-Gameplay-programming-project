@@ -64,7 +64,7 @@ public class CameraController : MonoBehaviour
 
         Vector3 look_at_pos = new Vector3(player_ref.transform.position.x, player_ref.transform.position.y + 2, player_ref.transform.position.z);
 
-        player_camera.transform.LookAt(look_at_pos);
+       player_camera.transform.LookAt(look_at_pos);
 
         var current_rot = verticle_movement.transform.eulerAngles;
         if (current_rot.x > 60 && current_rot.x < 200)
@@ -91,10 +91,13 @@ public class CameraController : MonoBehaviour
             if (Math.Abs(camera_hor_axis) > 0)
             {
                 main_camera.transform.Rotate(new Vector3(0, camera_hor_axis, 0) * (input_speed_mod) * Time.deltaTime);
+                print(main_camera.transform.eulerAngles);
             }
         }
         else
         {
+
+            print("moving");
             //rotate player to camera forward
             var player_rot = player_ref.transform.eulerAngles;
             player_rot.y = main_camera.transform.eulerAngles.y;

@@ -11,6 +11,8 @@ public class AI_Slime : MonoBehaviour
     public float jump_delay;
     public float knockback;
     public float damage_cooldown;
+    public int div_count;
+    public int split_count;
 
     private bool can_melee_attack;
     private float jump_timer;
@@ -181,22 +183,21 @@ public class AI_Slime : MonoBehaviour
             {
                 Vector3 spawn_position = transform.position;
                 spawn_position.y += 1.0f;
-                if (spawn_clone)
+                if (div_count > 0)
                 {
-
-                    for (int i = 3; i > 0; --i)
+                    for (int i = split_count; i > 0; --i)
                     {
                         var new_enemy = Instantiate(transform, new Vector3(0.0f, 0.0f, 0.0f), transform.rotation);
                         AI_Slime slime_ref = new_enemy.GetComponent<AI_Slime>();
                         slime_ref.jump_strength = 50;
                         new_enemy.position = spawn_position;
                         slime_ref.spawn_clone = false;
-                        new_enemy.transform.localScale = new Vector3(2, 2, 2);
+                        new_enemy.transform.localScale = transform.localScale / 2;
                         slime_ref.health = 2;
+                        slime_ref.div_count = div_count - 1;
                     }
                 }
 
-                spawn_clone = false;
 
                 if(!dead)
                     StartCoroutine(death());

@@ -89,7 +89,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 1
-    m_ConditionEvent: CylinderKeyItemHeld
+    m_ConditionEvent: FuseKeyItemHeld
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -1581529121365100147}
@@ -114,7 +114,7 @@ AnimatorController:
   m_Name: ElevatorGate_Collection
   serializedVersion: 5
   m_AnimatorParameters:
-  - m_Name: CylinderKeyItemHeld
+  - m_Name: FuseKeyItemHeld
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0

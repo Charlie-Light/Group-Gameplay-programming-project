@@ -19,7 +19,6 @@ public class PlayerController : MonoBehaviour
     public ElevatorScript elevatorScript;
 
     public float speed_modifier = 10.0f; 
-    public float speed_modifier = 10.0f;
     public float camera_speed_mod = 20.0f;
     public float dead_zone = 0.1f;
     public float attack_cooldown = 1.0f;
@@ -200,7 +199,7 @@ public class PlayerController : MonoBehaviour
         {
             timeDoubling += Time.deltaTime;
             canDouble = true;
-            if (timeDoubling >= 5)
+            if (timeDoubling >= 10)
             {
                 timeDoubling = 0;
                 canDouble = false;
@@ -215,7 +214,7 @@ public class PlayerController : MonoBehaviour
             if (dmgBoostDuration < 0)
             {
                 dmgMultiplier = 1; 
-                dmgBoostDuration = 30;
+                dmgBoostDuration = 60;
                 dmgBoosting = false;
                 //animator.SetBool("DoubleBoost", false);
             }
@@ -323,7 +322,7 @@ public class PlayerController : MonoBehaviour
             in_air = true;
             animation_handeler.SetBool("Jump", true);
             animation_handeler.SetBool("InAir", false);
-            rb.AddForce(new Vector3(0, 50, 0), ForceMode.Impulse);
+            rb.AddForce(new Vector3(0, 75, 0), ForceMode.Impulse);
             jump_count += 1;
         }
         else if (canDouble && !didDouble)

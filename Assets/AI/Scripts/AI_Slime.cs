@@ -13,6 +13,7 @@ public class AI_Slime : MonoBehaviour
     public float damage_cooldown;
     public int div_count;
     public int split_count;
+    public Material colour;
 
     private bool can_melee_attack;
     private float jump_timer;
@@ -73,7 +74,7 @@ public class AI_Slime : MonoBehaviour
                 {
                     can_be_attacked = true;
                     damage_timer = damage_cooldown;
-                    Renderer.material.color = Color.green;
+                    Renderer.material = colour;
                 }
             }
 

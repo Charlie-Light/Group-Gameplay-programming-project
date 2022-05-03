@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Shadow
   - Collide
+  - DoubleJump
+  - Speed
+  - Coin
   layers:
   - Default
   - TransparentFX

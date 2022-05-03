@@ -14,18 +14,31 @@ public class PlayerController : MonoBehaviour
     public bool camera_input_enabled = true; public bool player_input_vert_enabled = true; public bool player_input_horz_enabled = true; 
 
     //movement / attack vars
-    public float speed_modifier = 10.0f; public float camera_speed_mod = 20.0f;
+    public float speed_modifier = 10.0f; 
+    public float camera_speed_mod = 20.0f;
     public float dead_zone = 0.1f;
     public float attack_cooldown = 1.0f;
     private float current_attack_cooldown = 0.0f;
     public int current_attack = 0;
     private bool in_air = false;
     private float distance_to_ground;
-    private int jump_count = 0; private float jump_timer;
+    private int jump_count = 0; 
+    private float jump_timer;
     ParticleSystem power_up;
     public float camera_dist = 1.0f;
     private float attack_timer;
 
+    private bool canSpeed = false;
+    private bool isSpeeding = false;
+    private float timeSpeeding = 0f;
+    private float boostSpeed = 1f;
+
+    private bool canDouble = false;
+    private bool didDouble = false;
+    private float timeDoubling = 0f;
+
+    [SerializeField]
+    public int coinCounter = 0;
 
     public int health;
     public float damage_taken_delay;
@@ -67,18 +80,18 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-            update_movement();
+        update_movement();
 
-            if (!in_air)
-                attack();
-            if (Input.GetButton("Interact"))
+        if (!in_air)
+            attack();
+        if (Input.GetButton("Interact"))
                 interact();
 
         if (jump_timer <= 0)
         {
-            if (Input.GetButton("Jump") && jump_count < 2)
+            if (Input.GetButton("Jump"))
             {
-                jump_timer = 0.25f;
+                jump_timer = 0.5f;
                 Jump();
             }
             else if (IsGrounded())
@@ -89,6 +102,30 @@ public class PlayerController : MonoBehaviour
         else
         {
             jump_timer -= Time.deltaTime;
+        }
+
+        if (isSpeeding)
+        {
+            timeSpeeding += Time.deltaTime;
+            if (timeSpeeding >= 5)
+            {
+                timeSpeeding = 0;
+                boostSpeed = 1.5f;
+                isSpeeding = false;
+                canSpeed = false;
+                //animator.SetBool("SpeedBoost", false);
+            }
+        }
+        if (canDouble)
+        {
+            timeDoubling += Time.deltaTime;
+            canDouble = true;
+            if (timeDoubling >= 5)
+            {
+                timeDoubling = 0;
+                canDouble = false;
+                //animator.SetBool("DoubleBoost", false);
+            }
         }
     }
 
@@ -107,9 +144,6 @@ public class PlayerController : MonoBehaviour
                 {
                     overlapping_go.Remove(x);
                 }
-                {
-
-                }
                 if (left_fist.bounds.Intersects(x.GetComponent<Collider>().bounds))
                 {
                     if (x.GetComponent<AI_Slime>() != null)
@@ -127,6 +161,24 @@ public class PlayerController : MonoBehaviour
     {
         //add to refrence to manage overlapping gmae objects
         overlapping_go.Add(other.gameObject);
+
+        if (other.gameObject.tag == "Speed")
+        {
+            isSpeeding = true;
+            canSpeed = true;
+            Destroy(other.gameObject);
+        }
+        if (other.gameObject.tag == "DoubleJump")
+        {
+            didDouble = false;
+            canDouble = true;
+            Destroy(other.gameObject);
+        }
+        if (other.gameObject.tag == "Coin")
+        {
+            coinCounter++;
+            Destroy(other.gameObject);
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -144,16 +196,50 @@ public class PlayerController : MonoBehaviour
 
     void Jump()
     {
-        in_air = true;
+        /*in_air = true;
         rb.AddForce(Vector2.up * 50, ForceMode.Impulse);
         animation_handeler.SetBool("Jump", true);
         animation_handeler.SetBool("InAir", false);
-        jump_count += 1;
+        jump_count += 1;*/
+        if (!in_air)
+        {
+            in_air = true;
+            animation_handeler.SetBool("Jump", true);
+            animation_handeler.SetBool("InAir", false);
+            rb.AddForce(new Vector3(0, 50, 0), ForceMode.Impulse);
+            jump_count += 1; 
+        }
+        else if (canDouble && !didDouble)
+        {
+            didDouble = true;
+            if (rb.velocity.y > 0)
+            {
+                rb.AddForce(new Vector3(0, 50, 0), ForceMode.Impulse);
+            }
+            else if (rb.velocity.y < 0)
+            {
+                rb.AddForce(new Vector3(0, 75, 0), ForceMode.Impulse);
+            }
+            else if (rb.velocity.y < -1)
+            {
+                rb.AddForce(new Vector3(0, 100, 0), ForceMode.Impulse);
+            }
+            else if (rb.velocity.y < -2)
+            {
+                rb.AddForce(new Vector3(0, 150, 0), ForceMode.Impulse);
+            }
+            else if (rb.velocity.y < -3)
+            {
+                float force = 150 * ((-rb.velocity.y)/3);
+                rb.AddForce(new Vector3(0, force, 0), ForceMode.Impulse);
+            }
+            animation_handeler.SetBool("Jump", true);
+            animation_handeler.SetBool("InAir", false);
+        }
     }
 
     private void updateVerticleMovement()
     {
-
         if (IsGrounded() != true)
         {
             if (rb.velocity.y > 1)
@@ -227,7 +313,15 @@ public class PlayerController : MonoBehaviour
         vertical_axis = Input.GetAxis("Vertical");
         float camera_hor_axis = Input.GetAxis("Camera_horizontal");
 
-        sprint = Input.GetButton("Sprint");
+        
+        if (isSpeeding)
+        {
+            sprint = true; 
+        }
+        else
+        {
+            sprint = false;
+        }
 
         if ((Math.Abs(horizontal_axis) < dead_zone) || !player_input_horz_enabled )
             horizontal_axis = 0;
@@ -248,7 +342,7 @@ public class PlayerController : MonoBehaviour
             {
                 animation_handeler.SetBool("Sprint", false);
             }
-            transform.Translate(new Vector3(horizontal_axis, 0, vertical_axis) * speed_modifier * Time.deltaTime);
+            transform.Translate(new Vector3(horizontal_axis, 0, vertical_axis) * boostSpeed * 4 * Time.deltaTime);
         }
 
         if (Math.Abs(rb.velocity.x) > 0 || Math.Abs(rb.velocity.z) > 0)
@@ -267,11 +361,11 @@ public class PlayerController : MonoBehaviour
     {
         if (type == "speed")
         {
-            StartCoroutine(powerUpSpeed(value));
+            //StartCoroutine(powerUpSpeed(value));
         }
     }
 
-    IEnumerator powerUpSpeed(float value)
+    /*IEnumerator powerUpSpeed(float value)
     {
         animation_handeler.speed += (value / 10);
         speed_modifier += value;
@@ -282,7 +376,7 @@ public class PlayerController : MonoBehaviour
         animation_handeler.speed -= (value / 10);
         speed_modifier -= value;
         power_up.Stop();
-    }
+    }*/
 
     public void TakeDamage(int damage, float knockback, Vector3 attacker_forward)
     {

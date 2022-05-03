@@ -91,13 +91,11 @@ public class CameraController : MonoBehaviour
             if (Math.Abs(camera_hor_axis) > 0)
             {
                 main_camera.transform.Rotate(new Vector3(0, camera_hor_axis, 0) * (input_speed_mod) * Time.deltaTime);
-                print(main_camera.transform.eulerAngles);
+
             }
         }
         else
         {
-
-            print("moving");
             //rotate player to camera forward
             var player_rot = player_ref.transform.eulerAngles;
             player_rot.y = main_camera.transform.eulerAngles.y;

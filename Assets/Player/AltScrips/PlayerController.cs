@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
 
     //movement / attack vars
     public ElevatorScript elevatorScript;
+
     public float speed_modifier = 10.0f; 
     public float camera_speed_mod = 20.0f;
     public float dead_zone = 0.1f;

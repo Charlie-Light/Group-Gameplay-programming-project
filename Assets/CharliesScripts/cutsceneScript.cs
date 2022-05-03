@@ -33,7 +33,8 @@ public class cutsceneScript : MonoBehaviour
     {
         if (is_active)
         {
-            this.transform.LookAt(lookAt.transform);
+            if(lookAt != null)
+                this.transform.LookAt(lookAt.transform);
 
             if(!do_once)
             {
@@ -55,6 +56,8 @@ public class cutsceneScript : MonoBehaviour
                 print("Done!");
                 player_cam.GetComponent<Camera>().enabled = true;
                 scene_camera.enabled = false;
+                print("Destroy script!");
+                Destroy(this);
             }
             flipMovement();
         }
@@ -107,6 +110,7 @@ public class cutsceneScript : MonoBehaviour
                         else
                         {
                             reverse = true;
+                            Destroy(lookAt);
                             lookAt = player_ref;
                         }
 
@@ -119,6 +123,11 @@ public class cutsceneScript : MonoBehaviour
                 else
                 {
                     current_point += 1;
+                    if (current_point > 1)
+                    {
+                        lookAt.GetComponent<MeshRenderer>().enabled = false;
+                        print("hide");
+                    }
                 }
             }
         }

@@ -5,16 +5,18 @@ using System;
 
 public class PlayerController : MonoBehaviour
 {
+    public List<cutsceneScript> cutscenes;
+    public List<bool> cutscenes_played;
 
     //input vars
     private float horizontal_axis = 0.0f; private float vertical_axis = 0.0f;
     private float attackL; private float attackR;
     private bool sprint = false;
 
-    public bool camera_input_enabled = true; public bool player_input_vert_enabled = true; public bool player_input_horz_enabled = true; 
+    public bool camera_input_enabled = true; public bool player_input_vert_enabled = true; public bool player_input_horz_enabled = true;
 
     //movement / attack vars
-    public float speed_modifier = 10.0f; 
+    public float speed_modifier = 10.0f;
     public float camera_speed_mod = 20.0f;
     public float dead_zone = 0.1f;
     public float attack_cooldown = 1.0f;
@@ -22,7 +24,7 @@ public class PlayerController : MonoBehaviour
     public int current_attack = 0;
     private bool in_air = false;
     private float distance_to_ground;
-    private int jump_count = 0; 
+    private int jump_count = 0;
     private float jump_timer;
     ParticleSystem power_up;
     public float camera_dist = 1.0f;
@@ -66,6 +68,10 @@ public class PlayerController : MonoBehaviour
         player_cam_controller = new CameraController();
         player_cam_controller.InitilizeCameraController(camera_speed_mod, dead_zone, main_camera, this, camera_dist);
         attack_timer = 0.5f;
+        for(int i = cutscenes.Count; i > 0; i--)
+        {
+            cutscenes_played.Add(false);
+        }
     }
 
     // Update is called once per frame
@@ -85,7 +91,7 @@ public class PlayerController : MonoBehaviour
         if (!in_air)
             attack();
         if (Input.GetButton("Interact"))
-                interact();
+            interact();
 
         if (jump_timer <= 0)
         {
@@ -140,7 +146,7 @@ public class PlayerController : MonoBehaviour
         {
             foreach (GameObject x in overlapping_go)
             {
-                if(x == null)
+                if (x == null)
                 {
                     overlapping_go.Remove(x);
                 }
@@ -155,6 +161,8 @@ public class PlayerController : MonoBehaviour
 
             attack_timer -= Time.deltaTime;
         }
+
+        checkCutScenes();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -188,7 +196,7 @@ public class PlayerController : MonoBehaviour
 
     private void interact()
     {
-        foreach(GameObject x in overlapping_go)
+        foreach (GameObject x in overlapping_go)
         {
 
         }
@@ -207,7 +215,7 @@ public class PlayerController : MonoBehaviour
             animation_handeler.SetBool("Jump", true);
             animation_handeler.SetBool("InAir", false);
             rb.AddForce(new Vector3(0, 50, 0), ForceMode.Impulse);
-            jump_count += 1; 
+            jump_count += 1;
         }
         else if (canDouble && !didDouble)
         {
@@ -230,7 +238,7 @@ public class PlayerController : MonoBehaviour
             }
             else if (rb.velocity.y < -3)
             {
-                float force = 150 * ((-rb.velocity.y)/3);
+                float force = 150 * ((-rb.velocity.y) / 3);
                 rb.AddForce(new Vector3(0, force, 0), ForceMode.Impulse);
             }
             animation_handeler.SetBool("Jump", true);
@@ -277,7 +285,7 @@ public class PlayerController : MonoBehaviour
         attackL = Input.GetAxis("AttackL");
         attackR = Input.GetAxis("AttackR");
 
-        if(animation_handeler.GetCurrentAnimatorClipInfo(1)[0].clip.name == "Unarmed-Idle")
+        if (animation_handeler.GetCurrentAnimatorClipInfo(1)[0].clip.name == "Unarmed-Idle")
         {
             animation_handeler.SetLayerWeight(1, 0.6f);
         }
@@ -285,7 +293,7 @@ public class PlayerController : MonoBehaviour
         {
             animation_handeler.SetLayerWeight(1, 1f);
         }
-     
+
         if (current_attack_cooldown <= 0 && attackL > 0.1)
         {
             animation_handeler.SetBool("AttackLeft", true);
@@ -296,11 +304,11 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-                animation_handeler.SetInteger("current_attack", current_attack);
-                animation_handeler.SetBool("AttackLeft", false);
+            animation_handeler.SetInteger("current_attack", current_attack);
+            animation_handeler.SetBool("AttackLeft", false);
         }
 
-        if(current_attack_cooldown < -1 || current_attack >= 4)
+        if (current_attack_cooldown < -1 || current_attack >= 4)
         {
             animation_handeler.SetInteger("current_attack", 0);
             current_attack = 0;
@@ -313,17 +321,17 @@ public class PlayerController : MonoBehaviour
         vertical_axis = Input.GetAxis("Vertical");
         float camera_hor_axis = Input.GetAxis("Camera_horizontal");
 
-        
+
         if (isSpeeding)
         {
-            sprint = true; 
+            sprint = true;
         }
         else
         {
             sprint = false;
         }
 
-        if ((Math.Abs(horizontal_axis) < dead_zone) || !player_input_horz_enabled )
+        if ((Math.Abs(horizontal_axis) < dead_zone) || !player_input_horz_enabled)
             horizontal_axis = 0;
         if ((Math.Abs(vertical_axis) < dead_zone) || !player_input_vert_enabled)
             vertical_axis = 0;
@@ -333,7 +341,7 @@ public class PlayerController : MonoBehaviour
 
         if (Math.Abs(horizontal_axis) > 0 || Math.Abs(vertical_axis) > 0)
         {
-            if(sprint && IsGrounded() && vertical_axis > 0)
+            if (sprint && IsGrounded() && vertical_axis > 0)
             {
                 animation_handeler.SetBool("Sprint", true);
                 vertical_axis = vertical_axis * 2;
@@ -381,14 +389,14 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(int damage, float knockback, Vector3 attacker_forward)
     {
         //handle damage!
-        if(!invinisible)
+        if (!invinisible)
         {
             health -= damage;
             invinisible = true;
         }
         else
         {
-            if(invinisbile_timer > 0)
+            if (invinisbile_timer > 0)
             {
                 invinisbile_timer -= Time.deltaTime;
             }
@@ -399,6 +407,15 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+    }
+
+    void checkCutScenes()
+    {
+        if(!cutscenes_played[0] && coinCounter == 6)
+        {
+            cutscenes[0].is_active = true;
+            cutscenes_played[0] = true;
+        }
     }
 }
 

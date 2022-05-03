@@ -5,7 +5,6 @@ using System;
 
 public class PlayerController : MonoBehaviour
 {
-
     //input vars
     private float horizontal_axis = 0.0f; private float vertical_axis = 0.0f;
     private float attackL; private float attackR;
@@ -14,6 +13,7 @@ public class PlayerController : MonoBehaviour
     public bool camera_input_enabled = true; public bool player_input_vert_enabled = true; public bool player_input_horz_enabled = true; 
 
     //movement / attack vars
+    public ElevatorScript elevatorScript;
     public float speed_modifier = 10.0f; 
     public float camera_speed_mod = 20.0f;
     public float dead_zone = 0.1f;
@@ -36,6 +36,26 @@ public class PlayerController : MonoBehaviour
     private bool canDouble = false;
     private bool didDouble = false;
     private float timeDoubling = 0f;
+
+    private bool dmgBoosting = false;
+    private float dmgBoostDuration = 30f;
+    private int dmgMultiplier = 1;
+
+    [SerializeField]
+    private bool isPressing = false;
+    [SerializeField]
+    private bool canPress = false;
+    [SerializeField]
+    private bool canMove = true;
+    [SerializeField]
+    private bool cutsceneStarted = false;
+    [SerializeField]
+    private bool buttonPressed = false;
+    [SerializeField]
+    private float cutsceneTime = 0;
+    [SerializeField]
+    private Transform button;
+    public Animator doorAnimator; 
 
     [SerializeField]
     public int coinCounter = 0;
@@ -75,17 +95,67 @@ public class PlayerController : MonoBehaviour
         {
             current_attack_cooldown -= Time.deltaTime;
         }
+
         updateVerticleMovement();
     }
 
     private void FixedUpdate()
     {
-        update_movement();
+        if (canMove)
+        {
+            update_movement();
+        }
 
         if (!in_air)
             attack();
+
         if (Input.GetButton("Interact"))
-                interact();
+        {
+            isPressing = true; 
+        }
+        else
+        {
+            isPressing = false; 
+        }
+
+        if (isPressing && canPress && !buttonPressed)
+        {
+            Debug.Log("pressing press and button pressed");
+            animation_handeler.SetTrigger("HitButton");
+            doorAnimator.SetBool("Closed", false);
+            buttonPressed = true;
+            canPress = false;
+        }
+
+        if (buttonPressed)
+        {
+            if (!cutsceneStarted)
+            {
+                cutsceneStarted = true;
+            }
+            transform.position = new Vector3(button.transform.position.x + 0.1f, transform.position.y, button.transform.position.z - 1.5f);
+            Vector3 targetPostition = new Vector3(button.transform.position.x, transform.position.y, button.transform.position.z);
+            transform.LookAt(targetPostition);
+        }
+
+        if (cutsceneStarted)
+        {
+            cutsceneTime += Time.deltaTime;
+            if (cutsceneTime < 5)
+            {
+                canMove = false;
+            }
+        }
+
+        if (cutsceneTime > 5)
+        {
+            cutsceneTime = 0;
+            canMove = true;
+            buttonPressed = false;
+            canPress = false;
+            cutsceneStarted = false;
+            isPressing = false;
+        }
 
         if (jump_timer <= 0)
         {
@@ -126,6 +196,23 @@ public class PlayerController : MonoBehaviour
                 canDouble = false;
                 //animator.SetBool("DoubleBoost", false);
             }
+        }
+        if (dmgBoosting)
+        {
+            dmgBoostDuration -= Time.deltaTime;
+            dmgBoosting = true;
+            dmgMultiplier = 2;
+            if (dmgBoostDuration < 0)
+            {
+                dmgMultiplier = 1; 
+                dmgBoostDuration = 30;
+                dmgBoosting = false;
+                //animator.SetBool("DoubleBoost", false);
+            }
+        }
+        else
+        {
+            dmgMultiplier = 1;
         }
     }
 
@@ -179,11 +266,34 @@ public class PlayerController : MonoBehaviour
             coinCounter++;
             Destroy(other.gameObject);
         }
+        if (other.gameObject.tag == "DamageBoost")
+        {
+            dmgBoosting = true;
+            Destroy(other.gameObject);
+        }
+        if (other.gameObject.tag == "DoorButton")
+        {
+            button = other.gameObject.transform;
+            canPress = true;
+            buttonPressed = false;
+            Debug.Log("CAN PRESS");
+        }
+        if (other.gameObject.tag == "Elevator")
+        {
+            elevatorScript.goUp = true; 
+        }
     }
 
     private void OnTriggerExit(Collider other)
     {
         overlapping_go.Remove(other.gameObject);
+        if (other.gameObject.tag == "DoorButton")
+        {
+            button = other.gameObject.transform;
+            canPress = false;
+            buttonPressed = false;
+            Debug.Log("NOT PRESS");
+        }
     }
 
     private void interact()
@@ -196,11 +306,6 @@ public class PlayerController : MonoBehaviour
 
     void Jump()
     {
-        /*in_air = true;
-        rb.AddForce(Vector2.up * 50, ForceMode.Impulse);
-        animation_handeler.SetBool("Jump", true);
-        animation_handeler.SetBool("InAir", false);
-        jump_count += 1;*/
         if (!in_air)
         {
             in_air = true;
@@ -218,20 +323,7 @@ public class PlayerController : MonoBehaviour
             }
             else if (rb.velocity.y < 0)
             {
-                rb.AddForce(new Vector3(0, 75, 0), ForceMode.Impulse);
-            }
-            else if (rb.velocity.y < -1)
-            {
-                rb.AddForce(new Vector3(0, 100, 0), ForceMode.Impulse);
-            }
-            else if (rb.velocity.y < -2)
-            {
-                rb.AddForce(new Vector3(0, 150, 0), ForceMode.Impulse);
-            }
-            else if (rb.velocity.y < -3)
-            {
-                float force = 150 * ((-rb.velocity.y)/3);
-                rb.AddForce(new Vector3(0, force, 0), ForceMode.Impulse);
+                rb.velocity = transform.up * 12;
             }
             animation_handeler.SetBool("Jump", true);
             animation_handeler.SetBool("InAir", false);
@@ -383,7 +475,7 @@ public class PlayerController : MonoBehaviour
         //handle damage!
         if(!invinisible)
         {
-            health -= damage;
+            health -= damage * dmgMultiplier;
             invinisible = true;
         }
         else

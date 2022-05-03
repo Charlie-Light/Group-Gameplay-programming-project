@@ -9,6 +9,9 @@ TagManager:
   - DoubleJump
   - Speed
   - Coin
+  - DamageBoost
+  - DoorButton
+  - Elevator
   layers:
   - Default
   - TransparentFX
